@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>EduGenie - Learning Assistant</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>EduGenie</h1>
+
+        <p>Google Gemini Powered Learning Assistant</p>
+
+        <label for="task">Choose a Task:</label>
+
+        <select id="task">
+            <option value="qa">Question & Answer</option>
+            <option value="explain">Explain a Topic</option>
+            <option value="quiz">Generate Quiz</option>
+            <option value="summarize">Summarize</option>
+            <option value="recommend">Learning Recommendation</option>
+        </select>
+
+        <textarea
+            id="question"
+            placeholder="Enter your question or topic here..."
+        ></textarea>
+
+        <button onclick="submitQuestion()">Submit</button>
+
+        <div class="result">
+
+            <h3>Result</h3>
+
+            <p id="answer">
+                Your answer will appear here.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        async function submitQuestion() {
+
+            const task = document.getElementById("task").value;
+            const question = document.getElementById("question").value;
+            const answer = document.getElementById("answer");
+
+            if (!question.trim()) {
+
+                answer.innerText = "Please enter a question or topic.";
+
+                return;
+            }
+
+
+            answer.innerText = "Please wait...";
+
+
+            let url = "";
+
+
+            if (task === "qa") {
+
+                url = "/qa?question=" + encodeURIComponent(question);
+
+            }
+
+            else if (task === "explain") {
+
+                url = "/explain?topic=" + encodeURIComponent(question);
+
+            }
+
+            else if (task === "quiz") {
+
+                url = "/quiz?topic=" + encodeURIComponent(question);
+
+            }
+
+            else if (task === "summarize") {
+
+                url = "/summarize?text=" + encodeURIComponent(question);
+
+            }
+
+            else if (task === "recommend") {
+
+                url = "/learn/recommendations?topic=" + encodeURIComponent(question);
+
+            }
+
+
+            try {
+
+                const response = await fetch(url);
+
+                const data = await response.json();
+
+                answer.innerText = data.answer;
+
+            }
+
+            catch (error) {
+
+                answer.innerText =
+                    "Something went wrong. Please try again.";
+
+            }
+
+        }
+
+    </script>
+
+</body>
+
+</html>

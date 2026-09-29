@@ -1,7 +1,26 @@
-import google.generativeai as genai
+from google import genai
 
-def get_explanation(concept: str):
-    model = genai.GenerativeModel("gemini-1.5-flash")
-    prompt = f"Explain the following academic concept clearly with examples:\n{concept}"
-    response = model.generate_content(prompt)
-    return response.text
+client = genai.Client()
+
+
+def explain_topic(topic):
+
+    try:
+        response = client.models.generate_content(
+            model="gemini-3.8-flash",
+            contents=f"Explain this topic in simple English for a college student: {topic}"
+        )
+
+        return response.text
+
+    except Exception:
+
+        return f"""EduGenie Explanation
+
+Topic:
+{topic}
+
+Explanation:
+{topic} is an important concept that can be understood through its basic definition, key features, examples, and practical applications.
+
+This is a demo explanation because the Gemini service is temporarily unavailable."""

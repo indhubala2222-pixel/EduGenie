@@ -1,43 +1,58 @@
-import os
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-import google.generativeai as genai
+from fastapi import FastAPI, Request
 
-from explanation_module import get_explanation
-from qna import get_qna_answer
+from qna import answer_question
+from explanation_module import explain_topic
 from quiz_module import generate_quiz
-from summary_module import get_summary
-from learning_path import get_learning_path
+from summary_module import summarize_text
+from learning_path import get_learning_recommendation
 
-app = FastAPI(title="EduGenie API")
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "YOUR_API_KEY")
-genai.configure(api_key=GEMINI_API_KEY)
 
-class RequestModel(BaseModel):
-    task: str
-    user_input: str
+app = FastAPI()
 
-@app.get("/")
-def home():
-    return {"message": "EduGenie API is active!"}
+templates = Jinja2Templates(directory="templates")
 
-@app.post("/generate")
-def generate_response(data: RequestModel):
-    task = data.task
-    user_input = data.user_input
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
-    if task == "Explain":
-        res = get_explanation(user_input)
-    elif task == "QnA":
-        res = get_qna_answer(user_input)
-    elif task == "Quiz":
-        res = generate_quiz(user_input)
-    elif task == "Summary":
-        res = get_summary(user_input)
-    elif task == "Recommend Path":
-        res = get_learning_path(user_input)
-    else:
-        res = "Invalid Task"
 
-    return {"status": "success", "task": task, "result": res}
+@app.get("/", response_class=HTMLResponse)
+def home(request: Request):
+
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={"request": request}
+    )
+
+
+@app.get("/qa")
+def qa(question: str):
+
+    return {"answer": answer_question(question)}
+
+
+@app.get("/explain")
+def explain(topic: str):
+
+    return {"answer": explain_topic(topic)}
+
+
+@app.get("/quiz")
+def quiz(topic: str):
+
+    return {"answer": generate_quiz(topic)}
+
+
+@app.get("/summarize")
+def summarize(text: str):
+
+    return {"answer": summarize_text(text)}
+
+
+@app.get("/learn/recommendations")
+def learning_recommendations(topic: str):
+
+    return {"answer": get_learning_recommendation(topic)}
